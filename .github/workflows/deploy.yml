@@ -21,7 +21,7 @@ jobs:
           node-version: '18'
       - run: npm install
       - run: npm run build
-      - run: npm run export  # this should generate a static site into 'out'
+      - run: npm run export
       - uses: actions/upload-pages-artifact@v2
         with:
           path: ./out
