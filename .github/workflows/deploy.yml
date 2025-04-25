@@ -1,0 +1,20 @@
+name: Deploy Fumadocs Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: npm install
+      - name: Build Site
+        run: npm run build
+      - name: Deploy
+        run: |
+          # Add your deployment commands here
+          echo "Deploying..."

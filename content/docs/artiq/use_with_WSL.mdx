@@ -1,0 +1,220 @@
+---
+title: Nix with ARTIQ
+description: Overview of the project
+icon: BookIcon
+full: true
+---
+# Using `flake.nix` with WSL
+
+This guide provides steps to set up and use a `flake.nix` development environment within Windows Subsystem for Linux (WSL).
+
+## Prerequisites
+
+- **WSL Installed**: Ensure WSL is installed on your Windows machine. [Microsoft's WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install) can assist.
+- **Nix Package Manager**: Install Nix within your WSL distribution.
+
+  ```sh
+  sh <(curl -L https://nixos.org/nix/install) --daemon
+  ```
+
+  This command installs Nix in multi-user mode with daemon support.
+
+## Enabling Flakes
+
+Nix flakes are an experimental feature and need to be enabled:
+
+1. **Create Nix Configuration Directory**:
+
+   ```sh
+   mkdir -p ~/.config/nix
+   ```
+
+2. **Enable Flakes**: Add the following line to `~/.config/nix/nix.conf`:
+
+   ```sh
+   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+   ```
+
+3. **Restart the Nix Daemon**:
+
+   ```sh
+   sudo systemctl restart nix-daemon
+   ```
+
+   If `systemctl` isn't available, you might need to restart your WSL instance or use:
+
+   ```sh
+   sudo pkill nix-daemon
+   sudo nix-daemon &
+   ```
+
+## Setting Up Your Project with `flake.nix`
+
+1. **Navigate to Your Project Directory**:
+
+   ```sh
+   cd /path/to/your/project
+   ```
+
+2. **Initialize a New Flake**:
+
+   If you don't have a `flake.nix` file yet, you can create one using:
+
+   ```sh
+   nix flake init
+   ```
+
+   This command generates a basic `flake.nix` template.
+
+3. **Edit the `flake.nix` File**:
+
+   Open the `flake.nix` file with your preferred text editor and define your development environment. Here's an example configuration:
+
+   ```nix
+   {
+     description = "My Development Environment";
+
+     inputs = {
+       nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+     };
+
+     outputs = { self, nixpkgs }:
+       let
+         system = "x86_64-linux";
+         pkgs = import nixpkgs { inherit system; };
+       in
+       {
+         devShells.default = pkgs.mkShell {
+           buildInputs = [
+             pkgs.git
+             pkgs.nodejs
+             pkgs.python3
+             # Add other packages as needed
+           ];
+         };
+       };
+   }
+   ```
+
+   This configuration sets up a development shell with Git, Node.js, and Python 3.
+
+4. **Enter the Development Shell**:
+
+   ```sh
+   nix develop
+   ```
+
+   This command sets up the environment as specified in your `flake.nix`.
+
+## Editing `flake.nix`
+
+To modify your `flake.nix` file:
+
+1. **Open the File with a Text Editor**:
+
+   - Using `nano`:
+
+     ```sh
+     nano flake.nix
+     ```
+
+   - Using `vim`:
+
+     ```sh
+     vim flake.nix
+     ```
+
+2. **Make Necessary Changes**: For example, to add Python packages like `numpy` and `matplotlib`, modify the `buildInputs` section:
+
+   ```nix
+   buildInputs = [
+     (pkgs.python3.withPackages (ps: [
+       artiq-full.artiq
+       artiq-full.dax
+       artiq-full.artiq-comtools
+       ps.paramiko
+       ps.numpy
+       ps.matplotlib
+     ]))
+     artiq-full.openocd-bscanspi
+   ];
+   ```
+
+3. **Save and Exit**: After editing, save the file and exit the editor.
+
+## Applying Changes
+
+After modifying `flake.nix`:
+
+1. **Reload the Development Shell**:
+
+   Exit the current shell:
+
+   ```sh
+   exit
+   ```
+
+   Then re-enter:
+
+   ```sh
+   nix develop
+   ```
+
+   This command reinitializes the environment with your changes.
+
+2. **Verify Installed Packages**:
+
+   ```sh
+   git --version
+   node --version
+   python3 --version
+   ```
+
+   Ensure that the packages are correctly installed and accessible.
+
+## Troubleshooting
+
+- **Hanging on `nix develop`**: If the command seems unresponsive:
+
+  - **Check Network Connectivity**: Nix may be downloading packages.
+  - **Enable Debug Output**:
+
+    ```sh
+    NIX_DEBUG=1 nix develop
+    ```
+
+    This command provides verbose output to help identify issues.
+
+- **Warnings About Untrusted Substituters**: If you encounter warnings regarding untrusted substituters:
+
+  - **Add Your User to Trusted Users**:
+
+    1. **Edit Nix Configuration**:
+
+       ```sh
+       sudo nano /etc/nix/nix.conf
+       ```
+
+    2. **Add Trusted Users**: Include your username in the `trusted-users` line:
+
+       ```nix
+       trusted-users = root your-username
+       ```
+
+    3. **Restart Nix Daemon**:
+
+       ```sh
+       sudo systemctl restart nix-daemon
+       ```
+
+       If `systemctl` isn't available:
+
+       ```sh
+       sudo pkill nix-daemon
+       sudo nix-daemon &
+       ```
+
+## Additional Resources
+
+- [NixOS Wiki: Flakes](https://nixos.wiki/wiki/Flakes)
+- [Nix Flakes: An Introduction](https://christine.website/blog/nix-flakes-1-2022-02-21)

@@ -1,0 +1,98 @@
+---
+title: Install package in MSYS2
+description: Overview of the project
+icon: BookIcon
+full: true
+---
+
+
+# How to Install `matplotlib` in MSYS2
+
+When working with Python packages in MSYS2, it’s important to choose the correct environment. The default MSYS environment doesn’t provide many Python packages, including `matplotlib`. Instead, these packages are typically available in the MinGW-w64 environments, such as the Clang64 environment.
+
+## 1. Understanding MSYS2 Environments
+
+**MSYS2** provides multiple environments:
+
+- **MSYS (Native Environment)**:  
+  - Focuses on POSIX tools and utilities.  
+  - Not suited for installing Python libraries like `matplotlib`.
+
+- **MinGW-w64 Environments (e.g., Clang64)**:  
+  - Provide a Windows-native toolchain.  
+  - Feature extensive Python packages (including `matplotlib`) via `pacman` and allow easy setup of `pip`.
+
+**Key Point:** Always switch to a MinGW-w64 environment when installing Python packages.
+
+## 2. Selecting the Correct Environment
+
+Before attempting to install `matplotlib`, open the **MSYS2 MinGW Clang64** shell. This environment’s path typically looks like:
+
+```bash
+MSYS2 MinGW x64 → /mingw64
+MSYS2 MinGW Clang64 → /clang64
+```
+
+In this guide, we use **Clang64** as the example environment.
+
+## 3. Installing `matplotlib` Using `pacman`
+
+In the Clang64 environment, many Python packages are available via `pacman`. To install `matplotlib`, simply run:
+
+```bash
+pacman -S mingw-w64-clang-x86_64-python-matplotlib
+```
+
+If this command works successfully, you’re done. `matplotlib` is now installed and ready to use. You can verify it by running:
+
+```bash
+python -c "import matplotlib; print(matplotlib.__version__)"
+```
+
+## 4. If `pip` is Not Available (Alternative Installation Method)
+
+In some cases, you may prefer (or need) to use `pip` to install `matplotlib`. If `pip` is not yet installed in the Clang64 environment, follow these steps:
+
+1. **Install `pip` with `pacman`:**
+
+   ```bash
+   pacman -S mingw-w64-clang-x86_64-python-pip
+   ```
+   
+   This integrates `pip` into your `/clang64` Python environment.
+
+2. **Verify `pip` Installation:**
+   
+   ```bash
+   pip --version
+   ```
+
+   If you see the version number, `pip` is correctly installed.
+
+3. **Install `matplotlib` Using `pip`:**
+
+   ```bash
+   pip install matplotlib
+   ```
+
+4. **Verify the Installation:**
+
+   ```bash
+   python -c "import matplotlib; print(matplotlib.__version__)"
+   ```
+
+If the above command prints the version number, `matplotlib` is installed and functional.
+
+## 5. Summary
+
+- **Use the MinGW-w64 Environment (e.g., Clang64):**  
+  `matplotlib` and other Python packages are available here, not in the default MSYS environment.
+
+- **Install via `pacman` or `pip`:**  
+  - `pacman -S mingw-w64-clang-x86_64-python-matplotlib`  
+  - If needed, `pacman -S mingw-w64-clang-x86_64-python-pip` followed by `pip install matplotlib`.
+
+- **Check Your Installation:**  
+  Use `python -c "import matplotlib; print(matplotlib.__version__)"` to ensure the package is correctly installed.
+
+By following these steps and understanding the differences between MSYS2 environments, you can successfully install and use `matplotlib` (and other Python packages) in MSYS2.

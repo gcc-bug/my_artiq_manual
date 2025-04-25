@@ -1,0 +1,102 @@
+---
+title: super in ARTIQ
+description: Overview of the project
+icon: BookIcon
+full: true
+---
+
+
+## Why ARTIQ Requires Special Handling with Superclass
+
+In Python, when using multiple inheritance, classes follow the **Method Resolution Order (MRO)** to decide which superclass's method to invoke (see [super.md](../python/super.md) for more). For a typical example like your `UnifiedTheory` class, Python's MRO resolves which superclass methods to call, and `super()` works seamlessly because Python manages inheritance internally.
+
+However, ARTIQ's `EnvExperiment` introduces complexities that differ from typical Python classes. This is due to how ARTIQ handles experiment lifecycle and initialization, requiring explicit conformance to its structure.
+
+### Key Differences Between Normal Python Classes and ARTIQ Experiments
+
+1. **Lifecycle Management**:
+   - ARTIQ experiments are managed by the ARTIQ runtime, which relies on specific lifecycle methods (`build`, `prepare`, `run`, etc.). These methods are invoked in a specific order by the ARTIQ runtime and not by Python's default object initialization process (`__init__`).
+   - `EnvExperiment` does not use `__init__` for initialization. Instead, attributes and devices are set up in the `build` method.
+
+   **Normal Python Classes**:
+   ```python
+   class BaseClass:
+       def __init__(self):
+           print("Base class initialized")
+
+   class SubClass(BaseClass):
+       def __init__(self):
+           super().__init__()
+           print("Subclass initialized")
+
+   obj = SubClass()  # Works as expected
+   ```
+
+   **ARTIQ Experiment**:
+   ```python
+   from artiq.experiment import *
+
+   class MyExperiment(EnvExperiment):
+       def build(self):
+           self.setattr_device("core")  # Initialization happens here
+
+       def prepare(self):
+           pass
+
+       def run(self):
+           pass
+   ```
+
+2. **No Standard `__init__`**:
+   - ARTIQ experiments rely on the `build` method to initialize experiment attributes and devices. Calling `super().__init__()` on `EnvExperiment` doesn't work because `EnvExperiment` doesn't define a traditional `__init__` method.
+   - This is why directly inheriting from `EnvExperiment` requires careful use of ARTIQ's lifecycle methods.
+
+3. **Specialized Execution Environment**:
+   - ARTIQ experiments are executed in a real-time environment controlled by the ARTIQ runtime. This imposes restrictions on Python's dynamic method calls and object initialization.
+
+4. **Multiple Inheritance Order**:
+   - When combining `EnvExperiment` with another class (e.g., `SensorDataWriter`), Python's MRO might conflict with ARTIQ's expectations. Specifically, `EnvExperiment` requires its methods (`build`, `prepare`, `run`) to align with the ARTIQ runtime.
+   - To avoid issues, you must:
+     - Place `EnvExperiment` first in the inheritance list.
+     - Explicitly initialize the second parent class (e.g., `SensorDataWriter`) in the `prepare` method.
+
+### Why `super()` Behaves Differently
+In your ARTIQ example, the `super()` call cannot resolve `EnvExperiment.__init__` because:
+- `EnvExperiment` does not implement a traditional `__init__` method.
+- Its lifecycle is designed around `build`, `prepare`, and `run` methods instead.
+
+This is fundamentally different from normal Python classes, where `super().__init__()` can cascade through the parent classes without issue.
+
+### ARTIQ-Specific Solution
+To properly handle ARTIQ experiments with multiple inheritance:
+1. **Prioritize `EnvExperiment`:** Place it first in the inheritance list.
+2. **Initialize Parent Classes in `prepare`:** Explicitly call the second parent class's initializer in the `prepare` method, as `build` is reserved for ARTIQ device setup.
+
+Correct implementation:
+```python
+from artiq.experiment import *
+
+class SensorDataWriter:
+    def __init__(self, data_directory=None, buffer_size=None):
+        self.data_directory = data_directory or "/default/path"
+        self.buffer_size = buffer_size or 1024
+
+class SaveDataExample(EnvExperiment, SensorDataWriter):
+    def build(self):
+        self.setattr_device("core")
+
+    def prepare(self):
+        # Initialize SensorDataWriter here
+        SensorDataWriter.__init__(self, data_directory="/my/data", buffer_size=2048)
+
+    def run(self):
+        print(f"Data directory: {self.data_directory}, Buffer size: {self.buffer_size}")
+```
+
+### Notes for Future Use
+- **ARTIQ Lifecycle:** Always use `build`, `prepare`, and `run` for ARTIQ experiments.
+- **Avoid `__init__` in `EnvExperiment`:** Instead, rely on `build` for device attributes and `prepare` for other initialization.
+- **Documentation:** Refer to ARTIQ's official documentation for details on lifecycle methods and device management.
+
+This approach ensures compatibility with ARTIQ's runtime while adhering to Python's multiple inheritance principles.
+

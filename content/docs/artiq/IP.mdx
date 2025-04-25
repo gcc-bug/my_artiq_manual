@@ -1,0 +1,105 @@
+---
+title: IP Set up
+description: Overview of the project
+icon: BookIcon
+full: true
+---
+
+
+# Setting Up Network Connection for the ARTIQ Device on Windows
+
+This guide explains how to connect your computer (Windows PC) to an ARTIQ device, either directly or through a router. It uses MSYS2 tools on Windows and provides similar Linux commands for comparison.
+This guide assumes no prior knowledge of networking terms and aims to make each step clear and straightforward.
+
+---
+
+## Key Terms
+
+- **IP Address**: A unique identifier assigned to each device on a network. It’s similar to an address in the physical world, allowing devices to locate each other.
+- **Subnet**: A portion of a network with IP addresses that start with the same numbers (e.g., 192.168.1.x).
+- **Router**: A device that connects multiple devices to the same network. Think of it as a bridge that allows communication among connected devices.
+
+---
+
+## Option 1: Direct Connection (Without a Router)
+
+### Steps
+
+1. **Physically Connect the ARTIQ Device to the Windows PC**
+   - Use an Ethernet cable to connect the ARTIQ device directly to your Windows computer’s Ethernet port.
+
+2. **Open Command Prompt with Administrator Rights**
+   - To make changes to the network, you’ll need to open Command Prompt as an administrator:
+     - Press `Win + S`, type “cmd,” then right-click on Command Prompt and select “Run as administrator.”
+
+3. **Assign a Manual IP Address**
+   - Now, let’s assign a specific IP address to your computer’s Ethernet connection. This helps the ARTIQ device and your computer communicate directly:
+     - In Command Prompt, type the following command:
+       ```cmd
+       netsh interface ip add address name="Ethernet" addr=192.168.1.100 mask=255.255.255.0
+       ```
+     - **Explanation**:
+       - `Ethernet`: This is the name of the network connection. If your computer shows a different name (like “Local Area Connection”), replace “Ethernet” with that name.
+       - `192.168.1.100`: This is the specific IP address you’re assigning to your computer.
+       - `mask=255.255.255.0`: This is a setting that ensures your computer and ARTIQ device are in the same “subnet” or local network.
+
+4. **Test the Connection**
+   - To check if everything is working, use the `ping` command in Command Prompt:
+     ```cmd
+     ping 192.168.1.X
+     ```
+     - Replace `X` with the specific IP address of the ARTIQ device. If they’re connected, you’ll see a response.
+
+5. **Optional: Making the Configuration Permanent**
+   - This configuration will reset if you restart your computer. To make it permanent, you could set up a script that runs automatically on startup.
+
+---
+
+## Option 2: Connecting Through a Router
+
+If you want to connect through a router, follow these steps:
+
+### Steps
+
+1. **Connect Both Devices to the Router**
+   - Use Ethernet cables (or Wi-Fi for the Windows PC, if needed) to connect both your computer and the ARTIQ device to the router. This puts them on the same network so they can “see” each other.
+
+2. **Configure the Router to Assign IPs**
+   - Make sure your router is set to assign IP addresses in the same range for both devices, like `192.168.1.x`.
+   - **Optional**: To ensure that the ARTIQ device always has the same address (so it’s easy to find), you can set a “static IP” in the router’s settings. Most routers allow you to do this under a section like “DHCP” or “IP Reservations.”
+
+3. **Verify the Windows PC IP Address**
+   - To confirm your computer received an address in the right range, type this in Command Prompt:
+     ```cmd
+     ipconfig
+     ```
+   - Look for the IP address under your network connection. It should be something like `192.168.1.x` (where `x` is a unique number on the network).
+
+4. **Ping the ARTIQ Device**
+   - With both devices connected to the router, you should now be able to communicate with the ARTIQ device.
+   - Type this command in Command Prompt to test the connection:
+     ```cmd
+     ping 192.168.1.101
+     ```
+     - Replace `192.168.1.101` with the specific IP address of the ARTIQ device. If you see a response, the connection is working.
+
+5. **Adjust Windows Firewall (If Needed)**
+   - If there’s no response, the Windows Firewall might be blocking the communication. You may need to add a rule to allow the ARTIQ device’s IP address. Open the Firewall settings, go to “Advanced Settings,” and add an inbound rule to allow this IP.
+
+---
+
+By following these steps, you’ll set up a reliable connection to the ARTIQ device, either directly or via a router. This setup will let you transfer data and control the device as needed.
+
+
+# Similiar Setting Up on linux
+Below is a reorganized version that includes similar instructions for Linux. The main guide focuses on Windows, but a Linux example is provided at the end for reference.
+If you were setting this up on Linux (for example, Ubuntu), you could assign an IP address like this:
+
+```bash
+sudo ip addr add 192.168.1.100/24 dev eth0
+```
+
+- `192.168.1.100/24`: Specifies the IP address and subnet mask (255.255.255.0).
+- `eth0`: The name of the network interface. Replace it with the correct interface on your system.
+
+You could then use `ping 192.168.1.X` just like on Windows to test the connection.

@@ -1,0 +1,121 @@
+---
+title: Dashboard
+description: Overview of the project
+icon: BookIcon
+full: true
+---
+
+# Using the ARTIQ Dashboard
+
+The ARTIQ dashboard is a graphical user interface that allows users to interact with the ARTIQ master. It facilitates experiment scheduling, device management, and real-time monitoring of results. This guide provides step-by-step instructions to set up and use the ARTIQ dashboard.
+
+## 1. Setting Up the Environment
+
+### Prepare ARTIQ
+Ensure ARTIQ is installed.
+
+
+### Prepare the Master Directory
+Create a directory to serve as the ARTIQ master directory and copy the device database (`device_db.py`) into it:
+
+```bash
+mkdir ~/artiq-master
+cp device_db.py ~/artiq-master/device_db.py
+```
+
+### Create the Repository Folder
+
+```bash
+mkdir ~/artiq-master/repository
+```
+
+## 2. Starting the ARTIQ Master
+
+The ARTIQ master is responsible for scheduling and executing experiments. To start it, run:
+
+```bash
+cd ~/artiq-master
+artiq_master
+```
+
+This command keeps running in the background, indicating that the master is active.
+
+## 3. Launching the ARTIQ Dashboard
+
+Open a new terminal and start the dashboard:
+
+```bash
+artiq_dashboard
+```
+
+The dashboard interface will appear, displaying various sections such as "Explorer," "Log," and "Schedule."
+
+## 4. Submitting and Managing Experiments
+
+### Adding an Experiment
+Save your experiment scripts in the `repository` folder. For example, create `hello_world.py`:
+
+```python
+from artiq.experiment import *
+
+class HelloWorld(EnvExperiment):
+    """Hello World Experiment"""
+    def build(self):
+        pass
+
+    def run(self):
+        print("Hello, World!")
+```
+
+### Rescanning the Repository
+If the new experiment does not appear in the "Explorer" dock, right-click inside the "Explorer" and select **Scan repository HEAD** to refresh the list.
+
+### Submitting an Experiment
+Click on the experiment in the "Explorer" dock, configure any required arguments, and click **Submit**.
+
+### Monitoring Execution
+- The **Log** dock displays real-time output from running experiments.
+- The **Schedule** tab shows the status of submitted experiments.
+
+## 5. Utilizing Git Integration (Optional)
+
+### Initialize a Git Repository
+
+```bash
+cd ~/artiq-master/repository
+git init --bare
+```
+
+### Set Up a Working Directory
+
+```bash
+mkdir ~/artiq-work
+cd ~/artiq-work
+git init
+git remote add origin ~/artiq-master/repository
+```
+
+### Committing and Pushing Changes
+
+After editing or adding experiments in `~/artiq-work`:
+
+```bash
+git add experiment.py
+git commit -m "Add new experiment"
+git push origin master
+```
+
+### Configuring Automatic Repository Scans
+
+Create a `post-receive` hook to automatically rescan the repository upon new commits:
+
+```bash
+echo '#!/bin/sh
+artiq_client scan-repository --async' > ~/artiq-master/repository/hooks/post-receive
+chmod +x ~/artiq-master/repository/hooks/post-receive
+```
+
+This setup ensures that the dashboard reflects the latest committed experiments without manual rescans.
+
+
+The ARTIQ dashboard provides an efficient way to manage and monitor quantum experiments. By following this guide, we can set up your environment, submit experiments, and integrate version control with Git. For more advanced features, refer to the [ARTIQ manual](https://m-labs.hk/artiq/manual/management_system.html).

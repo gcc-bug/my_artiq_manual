@@ -1,0 +1,139 @@
+---
+title: super() in Python
+description: Overview of the project
+icon: BookIcon
+full: true
+---
+
+
+# Understanding `super()` in Python
+
+In Python, the `super()` function is a tool that helps us work with **inheritance** in an organized and efficient way. Think of it like referencing fundamental laws while building more specific models. You don't need to rewrite Newton's laws every time you model a system; you build on them. Similarly, in programming, `super()` allows us to reuse and extend the functionality of a **parent class** (a general "law") in a **child class** (a specific "model").
+
+---
+
+## What Is `super()`?
+
+`super()` is used to refer to the **parent class** of a given class. This is particularly useful in **object-oriented programming (OOP)** when we define one class (the child) to inherit properties or methods from another (the parent).
+
+Think of it like building a physics model where:
+- The **Parent Class** defines general properties or equations (e.g., F = ma).
+- The **Child Class** builds on those equations, perhaps adding constraints or additional behavior.
+
+With `super()`, we can directly call methods or properties of the parent class from within the child class.
+
+---
+
+## Why Use `super()`?
+
+1. **Reusability**: Avoid rewriting code that's already defined in the parent class.
+2. **Extendability**: Modify or extend the behavior of parent methods without overriding them completely.
+3. **Maintainability**: If the parent class changes, you don’t have to manually update every child class.
+
+---
+
+## Example 1: Single Inheritance
+
+Let's start with a simple example. Imagine you’re modeling two levels of systems:
+- **Parent**: Describes general behavior of particles (e.g., initializing mass).
+- **Child**: Adds specific behavior (e.g., adding charge).
+
+```python
+class Particle:
+    def __init__(self, mass):
+        self.mass = mass
+        print(f"Particle initialized with mass: {self.mass} kg")
+
+class ChargedParticle(Particle):
+    def __init__(self, mass, charge):
+        super().__init__(mass)  # Initialize properties from Particle
+        self.charge = charge
+        print(f"ChargedParticle initialized with charge: {self.charge} C")
+
+# Using the classes
+cp = ChargedParticle(1.67e-27, 1.6e-19)
+```
+
+**Output:**
+```
+Particle initialized with mass: 1.67e-27 kg
+ChargedParticle initialized with charge: 1.6e-19 C
+```
+
+Here, `super().__init__(mass)` calls the `__init__` method of the `Particle` class to initialize `mass`. The `ChargedParticle` class then adds its own property, `charge`.
+
+---
+
+## Example 2: Extending Parent Methods
+
+Suppose you want to study a system where particles are initialized with both **mass** and **velocity**.
+
+```python
+class Particle:
+    def describe(self):
+        print("This is a general particle.")
+
+class MovingParticle(Particle):
+    def describe(self):
+        super().describe()  # Call the parent method
+        print("This particle is moving.")
+
+# Using the classes
+mp = MovingParticle()
+mp.describe()
+```
+
+**Output:**
+```
+This is a general particle.
+This particle is moving.
+```
+
+In this case, `super().describe()` calls the parent’s `describe` method, and the child class adds more details about the particle's behavior.
+
+---
+
+## Example 3: Multiple Inheritance
+
+In physics, we often combine concepts. For instance:
+- **Classical Mechanics** describes motion (e.g., velocity, acceleration).
+- **Quantum Mechanics** describes particle wave functions.
+
+If we need to model a system combining both:
+
+```python
+class ClassicalMechanics:
+    def equation(self):
+        print("F = ma")
+
+class QuantumMechanics:
+    def equation(self):
+        print("Schrödinger's Equation")
+
+class UnifiedTheory(ClassicalMechanics, QuantumMechanics):
+    def equation(self):
+        super().equation()  # Resolves to ClassicalMechanics first
+        print("Combining classical and quantum mechanics.")
+
+# Using the classes
+theory = UnifiedTheory()
+theory.equation()
+```
+
+**Output:**
+```
+F = ma
+Combining classical and quantum mechanics.
+```
+
+Here, `super()` resolves the first parent class (`ClassicalMechanics`) based on Python's **Method Resolution Order (MRO)**.
+
+---
+
+## Summary
+
+- `super()` lets child classes access and extend methods or properties from their parent classes.
+- It's like building on established physical laws to model more complex systems.
+- It’s especially useful in cases of inheritance and when combining multiple concepts.
+
+If you think of your code as layers of physical models, `super()` ensures you can efficiently reference and build upon "lower layers" without duplicating effort. 
