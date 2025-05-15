@@ -1,7 +1,62 @@
 ---
-title: flash flow
-description: Overview of the project
+title: ARTIQ Timeline Overview
+description: Understanding the timeline and scheduling in ARTIQ.
 icon: BookIcon
 full: true
 ---
-it is 
+Here's a note explaining the basic concepts of the timeline in ARTIQ, formatted in markdown and ready to be used with Canvas tools:
+
+# ARTIQ Timeline Overview
+
+In ARTIQ, **timing** is critical for controlling quantum hardware, as quantum experiments often require precise timing control to ensure the proper operation of qubits and related devices. ARTIQ operates on a real-time system that schedules events based on a timeline and executes them with microsecond precision.
+
+## What is the ARTIQ Timeline?
+
+The **timeline** in ARTIQ is a sequence of time slots used to schedule and control the timing of events in an experiment. The timeline is essentially a **time window** during which operations on quantum hardware can be synchronized. Events on this timeline can represent various quantum operations, such as gate applications, signal manipulations, and time delays.
+
+### Key Components of the Timeline
+
+- **Timeline Cursor**: This is the pointer that tracks the execution time of scheduled events. The cursor moves forward in time as the system executes events.
+  
+- **Time Units**: The timeline is managed in terms of time units called **ticks** or **Time**, where 1 tick is typically a fraction of a microsecond.
+
+- **Events**: These are the operations that occur on the timeline. They can be actions such as turning on/off signals, applying quantum gates, or waiting for specific periods.
+
+### Time Scheduling in ARTIQ
+
+When writing an experiment in ARTIQ, you will schedule events in time by defining delays, actions, and operations at specific time points on the timeline. The timeline is generally controlled by the **kernel** and the use of **`@kernel`** decorated functions.
+
+Example of scheduling a time delay:
+
+```python
+from artiq.coredevice.ttl import TTLOut
+from artiq.language import kernel
+
+class MyExperiment:
+    @kernel
+    def run(self):
+        ttl = TTLOut(0)
+        ttl.on()
+        delay(1*ms)  # Delay for 1 millisecond
+        ttl.off()
+```
+
+The set of all input and output events on all channels constitutes the timeline. A high-resolution wall clock (rtio_counter_mu) counts clock cycles and manages the precise timing of the events. Output events are executed when their timestamp matches the current clock value. Input events are recorded when they reach the gateware and stamped with the current clock value accordingly.
+
+### RTIO (Real-Time I/O) and Underflow
+
+In ARTIQ, the **RTIO** system manages real-time interactions with hardware devices. **RTIOUnderflow** occurs when an event is scheduled too close to the timeline cursor or in the past, leading to timing errors.
+
+To avoid **RTIOUnderflow**, make sure that events are spaced out appropriately with adequate delays between them.
+
+## Best Practices
+
+* **Use delays between events**: To ensure proper sequencing of operations, it's often useful to introduce small delays between events.
+
+* **Time Synchronization**: Ensure that time synchronization is correctly handled with functions like `wait_until_mu()` to synchronize operations across different devices.
+
+* **Event Spreading**: Use event spreading to distribute events more evenly over time, which can help avoid underflows and overflows in the scheduling system.
+
+## Conclusion
+
+The timeline is a central concept in ARTIQ for managing precise timing in quantum experiments. Understanding how to schedule and manage events on the timeline is key to building successful experiments that work with real-time hardware.
