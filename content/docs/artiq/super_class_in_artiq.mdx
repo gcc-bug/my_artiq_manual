@@ -8,7 +8,7 @@ full: true
 
 ## Why ARTIQ Requires Special Handling with Superclass
 
-In Python, when using multiple inheritance, classes follow the **Method Resolution Order (MRO)** to decide which superclass's method to invoke (see [super.md](../python/super.md) for more). For a typical example like your `UnifiedTheory` class, Python's MRO resolves which superclass methods to call, and `super()` works seamlessly because Python manages inheritance internally.
+In Python, when using multiple inheritance, classes follow the **Method Resolution Order (MRO)** to decide which superclass's method to invoke (see [*super*](../python/super.mdx) for more). For a typical example like your `UnifiedTheory` class, Python's MRO resolves which superclass methods to call, and `super()` works seamlessly because Python manages inheritance internally.
 
 However, ARTIQ's `EnvExperiment` introduces complexities that differ from typical Python classes. This is due to how ARTIQ handles experiment lifecycle and initialization, requiring explicit conformance to its structure.
 
@@ -61,7 +61,7 @@ However, ARTIQ's `EnvExperiment` introduces complexities that differ from typica
      - Explicitly initialize the second parent class (e.g., `SensorDataWriter`) in the `prepare` method.
 
 ### Why `super()` Behaves Differently
-In your ARTIQ example, the `super()` call cannot resolve `EnvExperiment.__init__` because:
+In ARTIQ example, the `super()` call cannot resolve `EnvExperiment.__init__` because:
 - `EnvExperiment` does not implement a traditional `__init__` method.
 - Its lifecycle is designed around `build`, `prepare`, and `run` methods instead.
 
