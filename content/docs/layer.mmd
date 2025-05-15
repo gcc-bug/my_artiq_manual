@@ -1,0 +1,39 @@
+flowchart BT
+
+    subgraph "Foundation Layer"
+        subgraph "Artiq function"
+            A1[argument]
+            A3[dataset]
+            A4[ttl]
+        end
+        subgraph "Other control device"
+            B1[AD9910]
+        end
+    end
+
+    subgraph "Interface Layer"
+        C1[base.py]
+        C2[template]
+    end
+
+    B1 --> C1
+    A1 --> C1
+    A4 --> C1
+    A3 --> C1
+
+    subgraph "Experiment Layer"
+        E1[Experiment file]
+    end
+
+    C1 --super--> E1
+    C2 --Jinja2--> E1
+
+    subgraph "Running Layer"
+        F1[Dashboard]
+        F2[Jupyter]
+        F3[Terminal]
+    end
+
+    E1 --read 'dashboard' for more help --> F1
+    E1 --refer 'test.ipynb'--> F2
+    E1 --just 'artiq_run <file>'--> F3
